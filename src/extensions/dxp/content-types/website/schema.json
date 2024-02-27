@@ -1,0 +1,29 @@
+{
+  "kind": "collectionType",
+  "collectionName": "websites",
+  "info": {
+    "singularName": "website",
+    "pluralName": "websites",
+    "displayName": "website",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "name": {
+      "type": "string",
+      "required": true,
+      "maxLength": 30
+    },
+    "hostname": {
+      "type": "string",
+      "unique": true
+    },
+    "home": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "plugin::dxp.webpage"
+    }
+  }
+}

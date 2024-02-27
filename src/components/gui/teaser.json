@@ -1,0 +1,23 @@
+{
+  "collectionName": "components_gui_teasers",
+  "info": {
+    "displayName": "Teaser",
+    "icon": "apps"
+  },
+  "options": {},
+  "attributes": {
+    "Title": {
+      "type": "string"
+    },
+    "Image": {
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ],
+      "type": "media",
+      "multiple": false
+    }
+  }
+}

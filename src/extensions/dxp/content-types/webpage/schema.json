@@ -1,0 +1,50 @@
+{
+  "kind": "collectionType",
+  "collectionName": "webpages",
+  "info": {
+    "singularName": "webpage",
+    "pluralName": "webpages",
+    "displayName": "Webpage",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {
+    "i18n": {
+      "localized": true
+    }
+  },
+  "attributes": {
+    "name": {
+      "type": "string",
+      "required": true,
+      "maxLength": 50
+    },
+    "Title": {
+      "type": "string",
+      "maxLength": 50,
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    },
+    "children": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "plugin::dxp.webpage"
+    },
+    "renderings": {
+      "pluginOptions": {
+        "i18n": {
+          "localized": false
+        }
+      },
+      "type": "dynamiczone",
+      "components": [
+        "gui.teaser"
+      ]
+    }
+  }
+}
