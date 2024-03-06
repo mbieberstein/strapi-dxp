@@ -10,10 +10,15 @@ interface IParams {
 
 class ApiAdapter {
 
-    async getSites(locale: string = ''): Promise<ISite[]> 
+    static API_SITES = '/api/sites'
+    static API_PAGES = '/api/pages'
+    static API_LOCALES = '/api/i18n/locales'
+    static API_CONTENT_TYPES = '/api/content-type-builder/content-types'
+
+    static async getSites(locale: string = ''): Promise<ISite[]> 
     {
-        return await this.get({
-            url: "/api/sites",
+        return await ApiAdapter.get({
+            url: ApiAdapter.API_SITES,
             populate: false,
             populateDeep: false,
             preview: true,
@@ -21,10 +26,10 @@ class ApiAdapter {
         })
     }
 
-    async getSite(id: number, locale: string = ''): Promise<ISite> 
+    static async getSite(id: number, locale: string = ''): Promise<ISite> 
     {
-        return await this.get({
-            url: `/api/sites/${id}`,
+        return await ApiAdapter.get({
+            url: `${ApiAdapter.API_SITES}/${id}`,
             populate: true,
             populateDeep: false,
             preview: true,
@@ -32,10 +37,10 @@ class ApiAdapter {
         })
     }
 
-    async getPage(id: number, locale: string = '', populate: boolean = true, populateDeep: boolean = false): Promise<IPage> 
+    static async getPage(id: number, locale: string = '', populate: boolean = true, populateDeep: boolean = false): Promise<IPage> 
     {
-        return await this.get({
-            url: `/api/pages/${id}`,
+        return await ApiAdapter.get({
+            url: `${ApiAdapter.API_PAGES}/${id}`,
             populate: populate,
             populateDeep: populateDeep,
             preview: true,
@@ -43,16 +48,31 @@ class ApiAdapter {
         })
     }
 
-    async getLocales(): Promise<ILocalisation[]> 
+    static async createPage(data: any): Promise<IPage> 
     {
-        const response = await axiosInstance.get('/api/i18n/locales').then()
+        const response = await axiosInstance.post(`${ApiAdapter.API_PAGES}?populate=*`, data)
+
+        return await response.data.data
+    }
+
+    static async updatePage(id: number|string, data: any): Promise<IPage> 
+    {
+        const url = `${ApiAdapter.API_PAGES}/${id}?populate=*`
+        const response = await axiosInstance.put(url, data)
+
+        return await response.data.data
+    }
+
+    static async getLocales(): Promise<ILocalisation[]> 
+    {
+        const response = await axiosInstance.get(ApiAdapter.API_LOCALES)
         return await response.data
     }
 
-    async getContentType(api: string, type: string): Promise<ContentType> {
+    static async getContentType(api: string, type: string): Promise<IContentType> {
 
         return await this.get({
-            url: `/api/content-type-builder/content-types/api::${api}.${type}`,
+            url: `${ApiAdapter.API_CONTENT_TYPES}/api::${api}.${type}`,
             populate: false,
             populateDeep: false,
             preview: false,
@@ -60,7 +80,7 @@ class ApiAdapter {
         })
     }
 
-    async get<T>(params: IParams): Promise<T> 
+    private static async get<T>(params: IParams): Promise<T> 
     {
         if(params.locale || params.populate || params.populateDeep || params.preview) {
             if(params.url.indexOf('?') > 0) {
@@ -93,22 +113,7 @@ class ApiAdapter {
 
         const response = await axiosInstance.get(params.url)
         return await response.data.data
-    }
-
-
-    /*
-    async getWebpage(id: number) {
-
-        const entry = await strapi.entityService.findOne('plugin::dxp.webpage', id, {
-            fields: ['name', 'Title'],
-            populate: { children: true, renderings: true },
-          });
-
-          
-
-        return await entry
-    }*/
-    
+    }    
 }
 
 export default ApiAdapter

@@ -1,5 +1,6 @@
 import { Component, ReactNode } from "react";
-import { Button, Flex } from '@strapi/design-system';
+import { Button, IconButton } from '@strapi/design-system';
+import { Plus } from '@strapi/icons';
 import TreeView from "./TreeView";
 import {TreeIcon, TreeIconType} from "./TreeIcon";
 
@@ -8,6 +9,8 @@ interface IProps {
     data: IPage
     parent: TreeNode | null
     last: boolean
+    onClick: any
+    onAdd: any
 }
 
 interface IState {
@@ -36,6 +39,10 @@ class TreeNode extends Component<IProps, IState> {
         this.setState({selected: true})
     }
     
+    onAdd = (id: number | string) => {
+        this.props.onAdd(id);
+    }
+
     hasChildren = () => {
         return this.props.data.attributes.children.data.length > 0
     }
@@ -74,13 +81,14 @@ class TreeNode extends Component<IProps, IState> {
 
                 <TreeIcon customClickEvent={this.toggleChildren} node={this}/>    
                 <Button variant={buttonStyle} onClick={this.selectNode.bind(this, id)}>{page.Title}</Button>
+                {this.state.selected && <IconButton onClick={this.onAdd.bind(this, id)} label="Create" icon={<Plus />} />}
             </div>    
         
             {
                 this.state.expanded && children.map((child: IPage, index: number) => {
 
                     const last: boolean = index == children.length-1
-                    return <TreeNode last={last} parent={this} tree={this.props.tree} key={child.id.toString()} data={child}/>
+                    return <TreeNode last={last} parent={this} tree={this.props.tree} key={child.id.toString()} data={child} onClick={this.props.onClick} onAdd={this.props.onAdd}/>
                 })
             }                
           </>

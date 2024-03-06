@@ -11,6 +11,8 @@ import JsonView from '../../components/gui/JsonView';
 import { GridLayout } from '@strapi/design-system';
 import { Box } from '@strapi/design-system';
 import { BaseHeaderLayout, Breadcrumbs, Crumb, Divider } from '@strapi/design-system';
+import {Field, Flex, FieldLabel, FieldInput} from '@strapi/design-system';
+
 
 interface IProps {
 
@@ -44,6 +46,15 @@ class HomePage extends Component<IProps, IPage> {
                   <Crumb>Pages</Crumb>
               </Breadcrumbs>} as="h2" />
                <GridLayout>
+
+               <Box hasRadius background="neutral100" padding={4}>
+                <Field name="test" required={false}>
+                    <Flex direction="column" alignItems="flex-start" gap={1}>
+                        <FieldLabel>Test</FieldLabel>
+                        <FieldInput value="test" type="text"/>
+                    </Flex>
+                </Field>
+            </Box>
                   <Box hasRadius background="neutral0" padding={5}>
                       <TreeView data={this.state}></TreeView>
                   </Box>

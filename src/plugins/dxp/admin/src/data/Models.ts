@@ -51,14 +51,13 @@ interface ILocalisation extends IEntity {
     default: boolean
 }
 
-interface ContentType {
+interface IContentType {
 
     uid: string
     apiId: string
-    schema: Schema
-
+    schema: ISchema
 }
-interface Schema {
+interface ISchema {
 
     draftAndPublish: boolean
     displayName: string
@@ -66,4 +65,23 @@ interface Schema {
     pluralName: string
     description: string
     attributes: object
+}
+
+class Page implements IPage {
+
+    attributes: IPageAttributes
+    id: string | number
+    
+    constructor() {
+        this.id = 0
+        this.attributes = new PageAttributes
+    }
+}
+
+class PageAttributes implements IPageAttributes {
+    renderings: Rendering[] = []
+    children!: IMultiReference<IPage>
+    name!: string
+    Title!: string
+    locale!: string
 }

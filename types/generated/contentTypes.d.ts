@@ -379,18 +379,33 @@ export interface ApiPagePage extends Schema.CollectionType {
     };
   };
   attributes: {
+    name: Attribute.String &
+      Attribute.Required &
+      Attribute.Unique &
+      Attribute.SetPluginOptions<{
+        i18n: {
+          localized: true;
+        };
+      }>;
     Title: Attribute.String &
       Attribute.SetPluginOptions<{
         i18n: {
           localized: true;
         };
       }>;
+    showInNavigation: Attribute.Boolean &
+      Attribute.SetPluginOptions<{
+        i18n: {
+          localized: false;
+        };
+      }> &
+      Attribute.DefaultTo<true>;
     children: Attribute.Relation<
       'api::page.page',
       'oneToMany',
       'api::page.page'
     >;
-    renderings: Attribute.DynamicZone<['gui.teaser']> &
+    renderings: Attribute.DynamicZone<['gui.teaser', 'gui.header']> &
       Attribute.SetPluginOptions<{
         i18n: {
           localized: false;

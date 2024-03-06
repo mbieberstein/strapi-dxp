@@ -4,6 +4,7 @@ import { Button } from '@strapi/design-system';
 
 interface IProps {
     data: object | null
+    visible: boolean
 }
 
 interface IState {
@@ -15,7 +16,7 @@ class JsonView extends Component<IProps, IState> {
     constructor(props: IProps) {
         super(props)
 
-        this.state = {visible: false}
+        this.state = {visible: props.visible}
 
         // This binding is necessary to make `this` work in the callback
         this.handleClick = this.handleClick.bind(this)

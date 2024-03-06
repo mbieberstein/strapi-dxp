@@ -16,6 +16,16 @@
     }
   },
   "attributes": {
+    "name": {
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
     "Title": {
       "pluginOptions": {
         "i18n": {
@@ -23,6 +33,15 @@
         }
       },
       "type": "string"
+    },
+    "showInNavigation": {
+      "pluginOptions": {
+        "i18n": {
+          "localized": false
+        }
+      },
+      "type": "boolean",
+      "default": true
     },
     "children": {
       "type": "relation",
@@ -37,7 +56,8 @@
       },
       "type": "dynamiczone",
       "components": [
-        "gui.teaser"
+        "gui.teaser",
+        "gui.header"
       ]
     }
   }
