@@ -5,6 +5,7 @@ import { Button } from '@strapi/design-system';
 interface IProps {
     data: object | null
     visible: boolean
+    title: string
 }
 
 interface IState {
@@ -36,7 +37,7 @@ class JsonView extends Component<IProps, IState> {
 
         return(
             <>            
-                <Button variant={'secondary'} onClick={this.handleClick}>{this.state.visible ? "Hide Code" : "Show Code"}</Button>
+                <Button variant={'secondary'} onClick={this.handleClick}>{this.state.visible ? `Hide ${this.props.title}` : `Show ${this.props.title}`}</Button>
                 {this.state.visible && <JSONInput value={value}></JSONInput>}
             </>
         )

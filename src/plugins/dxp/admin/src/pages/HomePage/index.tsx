@@ -13,6 +13,7 @@ import { Trash, Information, Write } from '@strapi/icons';
 import Select from '../../components/gui/form/Select';
 import DataProvider from '../../data/DataProvider';
 import Form from '../../components/gui/form/Form';
+import Events from '../../components/gui/Events';
 
 interface IProps {
 }
@@ -25,13 +26,23 @@ interface IState {
   locales: IEntity[]
   contentType: IContentType
   showDialog: boolean
+  selectedPath: string
 }
 
 class HomePage extends Component<IProps, IState> {
 
+  static EVENT_ON_AFTER_PAGE_ADDED: string = "onAfterPageAdded"
+
   siteId: number = 0
  
   locale: string = ''
+
+  formData: object = {}
+
+  eventBus: any = {}
+
+  unsubscribe: any = {}
+
 
   componentDidMount() {
 
@@ -66,15 +77,19 @@ class HomePage extends Component<IProps, IState> {
   }
 
   // Loads the tree of pages of a site, starting with the home page
-  private loadSite = () => {
+  private loadSite = (callback: any = null) => {
 
     ApiAdapter.getSite(this.siteId, this.locale).then(site => {
     
-       const homeId = site.attributes.home.data.id
+      const homeId = site.attributes.home.data.id
 
       ApiAdapter.getPage(homeId as number, this.locale, false, true).then(page => {
 
-        this.setState({site: site, root: page})        
+        this.setState({site: site, root: page}, () => {
+          if(callback) {
+            callback()
+          }
+        })        
       })
       .catch(err => {console.error(err) });    
     })
@@ -82,22 +97,23 @@ class HomePage extends Component<IProps, IState> {
   }
 
 
-  // Handles the onClick event when slecting a page in the Treeview
+  // Handles the onClick event when selecting a page in the Treeview
   // Update the page and contentType in the state object
-  selectPage = (id: number) => {
+  selectPage = (id: number, path: string) => {
 
     ApiAdapter.getPage(id, this.locale).then(data => {
 
       ApiAdapter.getContentType('page', 'page').then( type => {
-
-        this.setState({page: data, contentType: type})
+        console.log("Select Page:" + path)
+        this.setState({page: data, contentType: type, selectedPath: path})
       })
       .catch(err => {console.error(err)})
     })
     .catch(err => {console.error(err) });
+
   }
 
-  openDialog = (id: number) => {
+  openDialog = () => {
 
     this.setState({showDialog: true})
   }
@@ -111,7 +127,19 @@ class HomePage extends Component<IProps, IState> {
 
     const pageId = this.state.page.id
 
-    this.setState({showDialog: false})
+    DataProvider.addChildPage(this.state.contentType, pageId as number, this.formData).then((page): void => {
+      
+      const selectedPath = this.state.selectedPath + '/' + page.id
+      this.setState({showDialog: false, page: page, selectedPath: selectedPath}, 
+        () => {
+          this.loadSite(() => {Events.raise(HomePage.EVENT_ON_AFTER_PAGE_ADDED, page.id)})          
+        }
+      )
+    })
+  }
+
+  formChangedHandler = (data: object) => {
+    this.formData = data
   }
 
   render(): ReactNode {
@@ -139,11 +167,12 @@ class HomePage extends Component<IProps, IState> {
                 <Box hasRadius background="neutral100" padding={4}>
                   <GridLayout>
                     <Box hasRadius background="neutral0">
-                      {this.state.root && <TreeView data={this.state.root} onClick={this.selectPage} onAdd={this.openDialog} />}
+                      {this.state.root && <TreeView data={this.state.root} onClick={this.selectPage} onAddAction={this.openDialog} selectedPath={this.state.selectedPath} />}
                     </Box>
                     <Box hasRadius background="neutral0">
-                      {this.state.contentType && <Form type={this.state.contentType} data={this.state.page.attributes} />}
-                      <JsonView data={this.state.page} visible={false}></JsonView>
+                      {this.state.contentType && <Form key={this.state.page.id} id='update-page' type={this.state.contentType} data={this.state.page.attributes} />}
+                      <JsonView data={this.state.page} visible={false} title='JSON'></JsonView>
+                      <JsonView data={this.state.contentType} visible={false} title='Schema'></JsonView>
                     </Box>
                   </GridLayout>
                 </Box>
@@ -153,14 +182,14 @@ class HomePage extends Component<IProps, IState> {
                 {/* JSON VIEW */}
                 <GridLayout>
                   <Box hasRadius background="neutral0" padding={2}>
-                    <JsonView data={this.state.root} visible={false}></JsonView>
+                    <JsonView title='Pages JSON' data={this.state.root} visible={false}></JsonView>
                   </Box>
                 </GridLayout>
 
                 {/* ADD NEW PAGE DIALOG */}
                 <Dialog onClose={this.closeDialog} title="Add new Page" isOpen={this.state.showDialog}>
                   <DialogBody>                  
-                      <Form type={this.state.contentType} data={{}}></Form>
+                      <Form id="create-page" type={this.state.contentType} data={{}} onChange={this.formChangedHandler} />
                   </DialogBody>
                   <DialogFooter 
                     startAction={<Button onClick={this.closeDialog} variant="tertiary">Cancel</Button>} 

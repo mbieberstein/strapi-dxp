@@ -1,46 +1,23 @@
 import { Component, ReactNode } from "react";
 import FormElement from "./FormElement";
 import { Typography, Box } from '@strapi/design-system';
-import ApiAdapter from "../../../data/ApiAdapter";
-import DataProvider from "../../../data/DataProvider";
 
 interface IProps {
+    id: string
     type: IContentType
     data: object
+    onChange?: any | null
 }
 
 class Form extends Component<IProps> {
 
     constructor(props: IProps) {
+
         super(props)
 
-        this.state = {name : ''}
-
-        Object.entries(this.props.type.schema.attributes).forEach(([k, v]) => {
-
-            let value: string|number|null = ''
-
-            if(this.isKey(this.props.data, k)) { 
-
-                //console.log(k, this.props.data[k]) 
-
-                value = this.props.data[k]
-
-                if(value === null) {
-                    value = ''
-                }
-            }
-
-            //@ts-ignore
-            this.state[k] = value
-        })
-    }
-
-    handleSubmit = async (event: any) => {
+        this.state = {}
         
-        console.log(this.state)
-
-        event.preventDefault();
+        this.mapState()
     }
 
     handleChange = (event: any) => {
@@ -51,7 +28,36 @@ class Form extends Component<IProps> {
 
         this.setState({
         [name]: value
+        }, () => {
+            
+            if(this.props.onChange) {
+                this.props.onChange(this.state)
+            }
         });
+
+    }
+
+    // Copy props.data to the internal state
+    mapState() {
+
+        // Using the attributes form the content-type schema
+        Object.entries(this.props.type.schema.attributes).forEach(([k, v]) => {
+
+            let value: string|number|null = ''
+
+            if(this.isKey(this.props.data, k)) { 
+
+                value = this.props.data[k]
+
+                // null values will produce a react warning
+                if(value === null) {
+                    value = ''
+                }
+            }
+
+            //@ts-ignore
+            this.state[k] = value
+        })
     }
 
     render(): ReactNode {
@@ -62,22 +68,21 @@ class Form extends Component<IProps> {
         
         const elements: any = []
 
-        Object.entries(this.props.type.schema.attributes).forEach(([k, v]) => {
+        Object.entries(this.props.type.schema.attributes).forEach(([key, attribute]) => {
         
             //@ts-ignore
-            const value = this.state[k]
+            const value = this.state[key]
             
-            elements.push(<FormElement key={k} name={k} label={k} value={value} type={v.type} onChange={this.handleChange}></FormElement>)
+            elements.push(<FormElement key={key} name={key} label={key} value={value} type={attribute.type} required={attribute.required} onChange={this.handleChange}></FormElement>)
         })
 
         return(
             <>
-                <form onSubmit={this.handleSubmit}>
+                <form>
                     <Box padding="1">
                         <Typography variant="beta">{this.props.type.schema.displayName}</Typography>
                     </Box>
                     <div>{elements}</div>
-                    <button type="submit">Save</button>
                 </form>
             </>
         )

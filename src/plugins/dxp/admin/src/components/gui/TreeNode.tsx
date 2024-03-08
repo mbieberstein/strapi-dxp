@@ -11,6 +11,7 @@ interface IProps {
     last: boolean
     onClick: any
     onAdd: any
+    selectedPath?: string
 }
 
 interface IState {
@@ -21,12 +22,14 @@ interface IState {
 class TreeNode extends Component<IProps, IState> {
     
     id: string = '';
+    path: string = ''
 
     constructor(props: IProps) {
         super(props)
 
         this.id = this.props.data.id.toString()    
         this.state = {expanded: false, selected: false}
+
         this.props.tree.addNode(this)
     }
 
@@ -34,7 +37,7 @@ class TreeNode extends Component<IProps, IState> {
         this.setState({expanded: !this.state.expanded})
     }
 
-    selectNode = (id: number | string) => {
+    selectNode = () => {
         this.props.tree.selectNode(this)
         this.setState({selected: true})
     }
@@ -59,17 +62,26 @@ class TreeNode extends Component<IProps, IState> {
 
         const id = this.props.data.id
         const page = this.props.data.attributes
-        const children = page.children.data
+        const children = page.children?.data
         const buttonStyle = this.state.selected ? 'secondary' : 'tertiary'
       
         let lines = []
-        let n: TreeNode = this
+        let n: TreeNode = this    
+
+        this.path = this.id
+
         while(n.props.parent != null) {
             const treeLine = n.props.parent.hasChildren() && !n.props.parent.isLast()
             const type = treeLine ? TreeIconType.line : TreeIconType.empty
             lines[lines.length] = <TreeIcon type={type} key={n.props.parent.id}></TreeIcon>
             n = n.props.parent
+
+            this.path = n.id + '/' + this.path
         }
+
+        this.path = '/' + this.path
+
+        //console.log("Node:" + this.path + " SelectedPath: " + this.props.selectedPath)
 
         lines = lines.reverse();
 
@@ -80,15 +92,15 @@ class TreeNode extends Component<IProps, IState> {
                 {lines.map(( x => {return x}))}
 
                 <TreeIcon customClickEvent={this.toggleChildren} node={this}/>    
-                <Button variant={buttonStyle} onClick={this.selectNode.bind(this, id)}>{page.Title}</Button>
-                {this.state.selected && <IconButton onClick={this.onAdd.bind(this, id)} label="Create" icon={<Plus />} />}
+                <Button variant={buttonStyle} onClick={this.selectNode}>{page.Title}</Button>
+                {this.state.selected && <IconButton onClick={this.onAdd.bind(this, id)} label="Add Page" icon={<Plus />} />}
             </div>    
         
             {
-                this.state.expanded && children.map((child: IPage, index: number) => {
+                this.state.expanded && children?.map((child: IPage, index: number) => {
 
                     const last: boolean = index == children.length-1
-                    return <TreeNode last={last} parent={this} tree={this.props.tree} key={child.id.toString()} data={child} onClick={this.props.onClick} onAdd={this.props.onAdd}/>
+                    return <TreeNode selectedPath={this.props.selectedPath} last={last} parent={this} tree={this.props.tree} key={child.id.toString()} data={child} onClick={this.props.onClick} onAdd={this.props.onAdd}/>
                 })
             }                
           </>

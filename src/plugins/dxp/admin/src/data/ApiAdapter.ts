@@ -10,10 +10,12 @@ interface IParams {
 
 class ApiAdapter {
 
-    static API_SITES = '/api/sites'
-    static API_PAGES = '/api/pages'
-    static API_LOCALES = '/api/i18n/locales'
-    static API_CONTENT_TYPES = '/api/content-type-builder/content-types'
+    private static API_SITES = '/api/sites'
+    private static API_PAGES = '/api/pages'
+    private static API_LOCALES = '/api/i18n/locales'
+    private static API_CONTENT_TYPES = '/api/content-type-builder/content-types'
+
+    static POPULATE_DEPTH: number = 10
 
     static async getSites(locale: string = ''): Promise<ISite[]> 
     {
@@ -108,7 +110,7 @@ class ApiAdapter {
         }
 
         if(params.populateDeep) {
-            params.url += 'deep'
+            params.url += `deep,${ApiAdapter.POPULATE_DEPTH}`
         }
 
         const response = await axiosInstance.get(params.url)

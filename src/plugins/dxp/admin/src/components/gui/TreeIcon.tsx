@@ -83,7 +83,7 @@ class TreeIcon extends Component<IProps> {
             state += this.parent
         }
 
-        if(n.data.attributes.children.data.length > 0) {
+        if(n.data.attributes.children?.data.length > 0) {
             state += this.children
         }
 

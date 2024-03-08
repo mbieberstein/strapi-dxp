@@ -19,10 +19,35 @@ class DataProvider {
         return result
     }
 
-    static async addPage(parentId: number, childData: object): Promise<IPage> {
+    static async addChildPage(type: IContentType, parentId: number, childData: object): Promise<IPage> {
 
         // Save new page
-        const newChild = await ApiAdapter.createPage(childData)
+        const data = {}
+
+        // Map the form data to a valid scheme
+        Object.entries(type.schema.attributes).forEach(([key, attribute]) => {  
+
+            //@ts-ignore
+            let value = childData[key]
+
+            if(value === '') {
+
+                // Empty strings are not allowed for some field types.
+                // A null value will delete the content of the field
+                value = null;
+
+                // BUT: for dynamic zones an empty value needs to be an empty array
+                if(attribute.type == "dynamiczone") {
+                    value = []
+                }
+            }
+
+            //@ts-ignore
+            data[key] = value
+        })
+
+        // Create the new page
+        const newChild = await ApiAdapter.createPage({data: data})
 
         // Retrieve new id to add it to the list of children of the parent page
         const newId = newChild.id
@@ -46,8 +71,12 @@ class DataProvider {
         // Update parent
         const updated = await ApiAdapter.updatePage(parent.id, parentData)
 
-        return updated
+        return newChild
     
+    }
+
+    static async updatePage(id: number, data: object) {
+
     }
 
 }
