@@ -1,5 +1,5 @@
 /**
- * webpage service
+ * dxpapi service
  */
 
 export default () => ({});

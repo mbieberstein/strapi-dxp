@@ -1,6 +1,6 @@
 import axiosInstance from 'axios';
 
-interface IParams {
+type IParams = {
     url: string
     populate: boolean
     populateDeep: boolean
@@ -14,6 +14,8 @@ class ApiAdapter {
     private static API_PAGES = '/api/pages'
     private static API_LOCALES = '/api/i18n/locales'
     private static API_CONTENT_TYPES = '/api/content-type-builder/content-types'
+    private static API_COMPONENTS = '/api/content-type-builder/components'
+    private static API_DXP_UPDATE = '/api/dxp/update'
 
     static POPULATE_DEPTH: number = 10
 
@@ -39,7 +41,7 @@ class ApiAdapter {
         })
     }
 
-    static async getPage(id: number, locale: string = '', populate: boolean = true, populateDeep: boolean = false): Promise<IPage> 
+    static async getPage(id: number|string, locale: string = '', populate: boolean = true, populateDeep: boolean = false): Promise<IPage> 
     {
         return await ApiAdapter.get({
             url: `${ApiAdapter.API_PAGES}/${id}`,
@@ -59,11 +61,12 @@ class ApiAdapter {
 
     static async updatePage(id: number|string, data: any): Promise<IPage> 
     {
-        const url = `${ApiAdapter.API_PAGES}/${id}?populate=*`
+        const url = `${ApiAdapter.API_DXP_UPDATE}/${id}?populate=*`
         const response = await axiosInstance.put(url, data)
 
         return await response.data.data
     }
+
 
     static async getLocales(): Promise<ILocalisation[]> 
     {
@@ -73,13 +76,19 @@ class ApiAdapter {
 
     static async getContentType(api: string, type: string): Promise<IContentType> {
 
-        return await this.get({
+        return await ApiAdapter.get({
             url: `${ApiAdapter.API_CONTENT_TYPES}/api::${api}.${type}`,
             populate: false,
             populateDeep: false,
             preview: false,
             locale: ''
         })
+    }
+
+    static async getComponents(): Promise<IComponents> {
+        
+        const response = await axiosInstance.get(ApiAdapter.API_COMPONENTS)
+        return await response.data
     }
 
     private static async get<T>(params: IParams): Promise<T> 

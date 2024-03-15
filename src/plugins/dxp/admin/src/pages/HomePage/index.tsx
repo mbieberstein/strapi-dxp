@@ -8,7 +8,7 @@ import { Component, ReactNode } from 'react';
 import ApiAdapter from '../../data/ApiAdapter';
 import TreeView from '../../components/gui/TreeView';
 import JsonView from '../../components/gui/JsonView';
-import { Box, GridLayout, BaseHeaderLayout, Breadcrumbs, Crumb, Divider, Flex, Dialog, DialogBody, DialogFooter, Button } from '@strapi/design-system';
+import { Box, GridLayout, BaseHeaderLayout, Breadcrumbs, Crumb, Divider, Flex, Dialog, DialogBody, DialogFooter, Button, Alert } from '@strapi/design-system';
 import { Trash, Information, Write } from '@strapi/icons';
 import Select from '../../components/gui/form/Select';
 import DataProvider from '../../data/DataProvider';
@@ -27,11 +27,11 @@ interface IState {
   contentType: IContentType
   showDialog: boolean
   selectedPath: string
+  showUpdateMessage: boolean
+  showSaveButton: boolean
 }
 
 class HomePage extends Component<IProps, IState> {
-
-  static EVENT_ON_AFTER_PAGE_ADDED: string = "onAfterPageAdded"
 
   siteId: number = 0
  
@@ -49,6 +49,7 @@ class HomePage extends Component<IProps, IState> {
       if (!this.state) {
 
         ApiAdapter.getSites().then(sites => {
+    
           this.setState({sites: sites})
         })
         .catch(err => {console.error(err) });
@@ -105,12 +106,12 @@ class HomePage extends Component<IProps, IState> {
 
       ApiAdapter.getContentType('page', 'page').then( type => {
         console.log("Select Page:" + path)
-        this.setState({page: data, contentType: type, selectedPath: path})
+        this.formData = {}
+        this.setState({page: data, contentType: type, selectedPath: path, showUpdateMessage: false, showSaveButton: false})
       })
       .catch(err => {console.error(err)})
     })
     .catch(err => {console.error(err) });
-
   }
 
   openDialog = () => {
@@ -132,14 +133,34 @@ class HomePage extends Component<IProps, IState> {
       const selectedPath = this.state.selectedPath + '/' + page.id
       this.setState({showDialog: false, page: page, selectedPath: selectedPath}, 
         () => {
-          this.loadSite(() => {Events.raise(HomePage.EVENT_ON_AFTER_PAGE_ADDED, page.id)})          
+          this.loadSite(() => {Events.raise(Events.ON_AFTER_PAGE_ADDED, page.id)})          
         }
       )
     })
   }
 
+  updatePage = () => {
+
+    if(Object.keys(this.formData).length === 0) {
+      return
+    }
+
+    const pageId = this.state.page.id
+
+    DataProvider.updatePage(this.state.contentType, pageId as number, this.formData).then((page: any): void => {
+      this.setState({page: page, showUpdateMessage: true, showSaveButton: false}, () => {
+        Events.raise(Events.ON_AFTER_PAGE_UPDATED, page)
+      })
+    })
+  }
+
   formChangedHandler = (data: object) => {
     this.formData = data
+
+    console.log(this.formData)
+    if(this.state.showUpdateMessage || !this.state.showSaveButton) {
+      this.setState({showUpdateMessage: false, showSaveButton: true})
+    }
   }
 
   render(): ReactNode {
@@ -160,42 +181,58 @@ class HomePage extends Component<IProps, IState> {
                   <Flex background="neutral100" gap={1} padding={2}>
                     <Select data={this.state.sites} value={this.state.site?.id} label='Sites' placeholder='Select Site...' onChange={this.selectSite}></Select>
                     <Select data={this.state.locales} value={this.locale} label='Locales' placeholder='Select Locale...' onChange={this.selectLocale}></Select>
+                    {this.state.showSaveButton && <Button style={{marginTop: "20px"}} variant="default" startIcon={<Write />} onClick={this.updatePage}>Save</Button>}
                   </Flex>
                 </Box>;
 
+                {/* MESSAGES */}
+                {this.state.showUpdateMessage && <Alert closeLabel="Close" title="OK:" variant="success">Successfuly updated the page data</Alert>}                
+
                 {/* TREEVIEW / FORM */}
+                {this.state.root && 
                 <Box hasRadius background="neutral100" padding={4}>
                   <GridLayout>
                     <Box hasRadius background="neutral0">
                       {this.state.root && <TreeView data={this.state.root} onClick={this.selectPage} onAddAction={this.openDialog} selectedPath={this.state.selectedPath} />}
                     </Box>
+                    {this.state.contentType &&
                     <Box hasRadius background="neutral0">
-                      {this.state.contentType && <Form key={this.state.page.id} id='update-page' type={this.state.contentType} data={this.state.page.attributes} />}
+                      <Form key={this.state.page.id} id='update-page' schema={this.state.contentType.schema} data={this.state.page.attributes} onChange={this.formChangedHandler} />
                       <JsonView data={this.state.page} visible={false} title='JSON'></JsonView>
                       <JsonView data={this.state.contentType} visible={false} title='Schema'></JsonView>
                     </Box>
+                    }
                   </GridLayout>
                 </Box>
-                                
-                <Divider/> 
-                
+                }                            
+                     
                 {/* JSON VIEW */}
+                {this.state.root && 
+                <div>
+                <Divider/>
+                <Box hasRadius background="neutral100" padding={4}>
                 <GridLayout>
                   <Box hasRadius background="neutral0" padding={2}>
-                    <JsonView title='Pages JSON' data={this.state.root} visible={false}></JsonView>
+                    <JsonView title='Site JSON' data={this.state.root} visible={false}></JsonView>
                   </Box>
                 </GridLayout>
+                </Box>
+                </div>
+                }    
 
                 {/* ADD NEW PAGE DIALOG */}
+                {this.state.contentType && 
                 <Dialog onClose={this.closeDialog} title="Add new Page" isOpen={this.state.showDialog}>
                   <DialogBody>                  
-                      <Form id="create-page" type={this.state.contentType} data={{}} onChange={this.formChangedHandler} />
+                      <Form id="create-page" schema={this.state.contentType.schema} data={{}} onChange={this.formChangedHandler} />
                   </DialogBody>
                   <DialogFooter 
                     startAction={<Button onClick={this.closeDialog} variant="tertiary">Cancel</Button>} 
                     endAction={<Button variant="default" startIcon={<Write />} onClick={this.submitDialog}>Save</Button>} 
                   />
-                </Dialog>                
+                </Dialog> 
+                }
+                
                </>
               )
       }

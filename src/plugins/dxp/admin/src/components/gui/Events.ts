@@ -3,6 +3,9 @@ type EventHandler<T = any> = (payload: T) => void
 
 class Events {
 
+    static ON_AFTER_PAGE_ADDED: string = "onAfterPageAdded"
+    static ON_AFTER_PAGE_UPDATED: string = "onAfterPageUpdated"
+
     static map = new Map<string, EventHandler[]>()
 
     static subscribe(key: string, handler: EventHandler): void {

@@ -51,37 +51,50 @@ interface ILocalisation extends IEntity {
     default: boolean
 }
 
+// COMMON SCHEMA FOR CONTENT TYPE / COMPONENT
+interface ISchema {
+    displayName: string
+    attributes: object
+}
+
+// CONTENT TYPE
 interface IContentType {
 
     uid: string
     apiId: string
-    schema: ISchema
+    schema: IContentTypeSchema
 }
-interface ISchema {
+
+interface IContentTypeSchema extends ISchema {
 
     draftAndPublish: boolean
-    displayName: string
     singularName: string
     pluralName: string
     description: string
-    attributes: object
 }
 
-class Page implements IPage {
-
-    attributes: IPageAttributes
-    id: string | number
-    
-    constructor() {
-        this.id = 0
-        this.attributes = new PageAttributes
-    }
+// COMPONENTS
+interface IComponents {
+    data: IComponent[]
 }
 
-class PageAttributes implements IPageAttributes {
-    renderings: Rendering[] = []
-    children!: IMultiReference<IPage>
-    name!: string
-    Title!: string
-    locale!: string
+interface IComponent {
+
+    uid: string
+    category: string
+    apiId: string
+    schema: IComponentSchema
+}
+
+interface IComponentSchema extends ISchema {
+
+    description: string
+    icon: string
+    collectionName: string
+}
+
+// RENDERING
+interface IRendering {
+    id: number
+    __component: string
 }

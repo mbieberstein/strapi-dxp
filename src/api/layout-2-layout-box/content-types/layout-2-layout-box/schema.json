@@ -1,0 +1,26 @@
+{
+  "kind": "collectionType",
+  "collectionName": "layout_2_layout_boxes",
+  "info": {
+    "singularName": "layout-2-layout-box",
+    "pluralName": "layout-2-layout-boxes",
+    "displayName": "Layout 2 Layout Box"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "contextEntity": {
+      "type": "string"
+    },
+    "contextId": {
+      "type": "biginteger"
+    },
+    "children": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::layout-box.layout-box"
+    }
+  }
+}

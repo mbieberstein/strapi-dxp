@@ -2,10 +2,11 @@
 export default [
   {
     method: 'GET',
-    path: '/',
+    path: '/test',
     handler: 'myController.index',
     config: {
       policies: [],
+      auth: false
     },
   }, 
 ];

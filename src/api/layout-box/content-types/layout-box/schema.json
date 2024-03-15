@@ -1,0 +1,30 @@
+{
+  "kind": "collectionType",
+  "collectionName": "layout_boxes",
+  "info": {
+    "singularName": "layout-box",
+    "pluralName": "layout-boxes",
+    "displayName": "Layout Box",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "Width": {
+      "type": "string"
+    },
+    "Height": {
+      "type": "string"
+    },
+    "Background": {
+      "type": "string"
+    },
+    "children": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::layout-box-2-layout-box.layout-box-2-layout-box"
+    }
+  }
+}

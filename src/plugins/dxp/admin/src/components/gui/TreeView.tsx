@@ -1,6 +1,5 @@
 import React, { Component, ReactNode } from 'react';
 import TreeNode from './TreeNode'
-import HomePage from '../../pages/HomePage';
 import Events from '../gui/Events'
 
 interface IProps {
@@ -18,7 +17,8 @@ class TreeView extends Component<IProps> {
     constructor(props: IProps) {
         super(props)
 
-        Events.subscribe(HomePage.EVENT_ON_AFTER_PAGE_ADDED, this.onAfterNodeAdded)
+        Events.subscribe(Events.ON_AFTER_PAGE_ADDED, this.onAfterNodeAdded)
+        Events.subscribe(Events.ON_AFTER_PAGE_UPDATED, this.onAfterNodeUpdated)
     }
 
     onAfterNodeAdded = (id: string) => {
@@ -37,8 +37,20 @@ class TreeView extends Component<IProps> {
             node.setState({selected: true})
     
             this.props.onClick(node.id, node.path)    
-        })
-        
+        })   
+    }
+
+    onAfterNodeUpdated = (data: IPage) => {
+
+        if(!this.selectedNode) {
+            return
+        }
+
+        const displayName = TreeNode.getDisplayName(data)
+
+        if(this.selectedNode.state.displayName != displayName) {
+            this.selectedNode.setState({displayName: displayName})
+        }
     }
 
     addNode(node: TreeNode) {

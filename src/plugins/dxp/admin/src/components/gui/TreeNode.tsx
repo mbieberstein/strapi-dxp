@@ -17,6 +17,7 @@ interface IProps {
 interface IState {
     expanded: boolean
     selected: boolean
+    displayName: string
 }
 
 class TreeNode extends Component<IProps, IState> {
@@ -28,9 +29,17 @@ class TreeNode extends Component<IProps, IState> {
         super(props)
 
         this.id = this.props.data.id.toString()    
-        this.state = {expanded: false, selected: false}
+        this.state = {
+            expanded: false, 
+            selected: false, 
+            displayName: TreeNode.getDisplayName(this.props.data)
+        }
 
         this.props.tree.addNode(this)
+    }
+
+    static getDisplayName(data: IPage) {
+        return data.attributes.Title ?? data.attributes.name
     }
 
     toggleChildren = () => {
@@ -92,7 +101,7 @@ class TreeNode extends Component<IProps, IState> {
                 {lines.map(( x => {return x}))}
 
                 <TreeIcon customClickEvent={this.toggleChildren} node={this}/>    
-                <Button variant={buttonStyle} onClick={this.selectNode}>{page.Title}</Button>
+                <Button variant={buttonStyle} onClick={this.selectNode}>{this.state.displayName}</Button>
                 {this.state.selected && <IconButton onClick={this.onAdd.bind(this, id)} label="Add Page" icon={<Plus />} />}
             </div>    
         

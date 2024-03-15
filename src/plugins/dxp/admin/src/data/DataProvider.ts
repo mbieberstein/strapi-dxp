@@ -1,4 +1,7 @@
+
+import { UID } from "@strapi/types/dist/types";
 import ApiAdapter from "./ApiAdapter";
+import { Strapi } from "@strapi/strapi";  
 
 class DataProvider {
 
@@ -21,30 +24,8 @@ class DataProvider {
 
     static async addChildPage(type: IContentType, parentId: number, childData: object): Promise<IPage> {
 
-        // Save new page
-        const data = {}
-
-        // Map the form data to a valid scheme
-        Object.entries(type.schema.attributes).forEach(([key, attribute]) => {  
-
-            //@ts-ignore
-            let value = childData[key]
-
-            if(value === '') {
-
-                // Empty strings are not allowed for some field types.
-                // A null value will delete the content of the field
-                value = null;
-
-                // BUT: for dynamic zones an empty value needs to be an empty array
-                if(attribute.type == "dynamiczone") {
-                    value = []
-                }
-            }
-
-            //@ts-ignore
-            data[key] = value
-        })
+        // Map data
+        const data = this.mapData(type, childData)
 
         // Create the new page
         const newChild = await ApiAdapter.createPage({data: data})
@@ -69,14 +50,63 @@ class DataProvider {
         const parentData = {data: {children: children}}
         
         // Update parent
-        const updated = await ApiAdapter.updatePage(parent.id, parentData)
+        await ApiAdapter.updatePage(parent.id, parentData)
 
         return newChild
-    
     }
 
-    static async updatePage(id: number, data: object) {
+    static async updatePage(type: IContentType, id: string|number, data: object, locale?: string): Promise<IPage> {
 
+        const apiData = this.mapData(type, data)
+
+        await ApiAdapter.updatePage(id, {data: apiData})
+
+        const updated = await ApiAdapter.getPage(id, locale, true)
+
+        return updated
+    }
+
+    static async getComponents(): Promise<Map<string, IComponent>> {
+
+        const map = new Map<string, IComponent>();
+
+        const components = await ApiAdapter.getComponents()
+
+        components.data.forEach((component: IComponent) => {
+
+            map.set(component.uid, component)
+        })
+
+        return map
+    }
+
+    private static mapData(type: IContentType, data: object): object {
+
+        const newData = {}
+
+       // Map the form data to a valid scheme
+       Object.entries(type.schema.attributes).forEach(([key, attribute]) => {  
+
+        //@ts-ignore
+        let value = data[key]
+
+        if(value === '') {
+
+            // Empty strings are not allowed for some field types.
+            // A null value will delete the content of the field
+            value = null;
+
+            // BUT: for dynamic zones an empty value needs to be an empty array
+            if(attribute.type == "dynamiczone") {
+                value = []
+            }
+        }
+
+            //@ts-ignore
+            newData[key] = value
+        })
+
+        return newData
     }
 
 }
